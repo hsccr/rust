@@ -11,7 +11,7 @@ pub struct PostData {
 }
 
 #[derive(Serialize)]
-pub struct State {
+pub struct JsonResponse {
     state: String,
     message: String,
 }
@@ -37,8 +37,8 @@ fn hi(name: String) -> String {
 }
 
 #[get("/")]
-fn httpd_get() -> Json<State> {
-  Json(State {
+fn httpd_get() -> Json<JsonResponse> {
+  Json(JsonResponse {
     state: String::from("Ok"),
     message: String::from("call to get"),
   })
