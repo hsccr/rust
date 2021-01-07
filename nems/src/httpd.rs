@@ -1,9 +1,8 @@
-use rocket::{self, get, put, post, delete, head, patch, options, routes};
-//use rocket::response::content::Json;
+use rocket::{get, put, post, delete, head, patch, options, routes};
 use rocket_contrib::json::Json;
 use rocket::http::Status;
-use serde::{Deserialize, Serialize};
 use rocket::response::status::Custom;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct PostData {
