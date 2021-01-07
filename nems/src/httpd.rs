@@ -5,13 +5,13 @@ use rocket::response::status::Custom;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct PostData {
-    pub name: String,
-    pub message: String,
+struct PostData {
+    name: String,
+    message: String,
 }
 
 #[derive(Serialize)]
-pub struct JsonResponse {
+struct JsonResponse {
     state: String,
     message: String,
 }
