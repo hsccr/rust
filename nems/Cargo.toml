@@ -1,0 +1,15 @@
+[package]
+name = "nems"
+description = "Network Event Map System"
+version = "0.1.0"
+authors = ["Chungrae Cho <ccr@emstone.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = "0.4.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rocket_contrib_codegen = "0.4.6"
+rocket_contrib = { version = "0.4", features = ["diesel_sqlite_pool"] }
