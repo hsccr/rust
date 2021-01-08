@@ -9,8 +9,37 @@ use rocket_contrib::uuid::uuid_crate as uuid;
 
 use serde::{Deserialize, Serialize};
 
+use std::collections::HashSet;
 use std::collections::HashMap;
 use std::sync::Mutex;
+
+
+#[derive(Default)]
+struct Handler {
+  route: String,
+  func: Option<Box<dyn FnMut(i32)>>,
+}
+
+impl Handler {
+  fn new() -> Handler {
+    Default::default()
+  }
+
+  fn set_route(&mut self, route: String) {
+    self.route = route;
+  }
+
+  fn set_func<CB: 'static + FnMut(i32)>(&mut self, c: CB) {
+      self.func = Some(Box::new(c));
+  }
+
+  fn do_func(&mut self, arg: i32) {
+    match self.func {
+      Some(ref mut x) => (x)(arg),
+      None => println!(""),
+    }
+  }
+}
 
 struct ShareData
 {
@@ -126,22 +155,34 @@ fn people(id: Uuid, state: State<ShareData>) -> Result<String, String> {
     .ok_or_else(|| format!("Person not found for UUID: {}", id))?)
 }
 
-pub fn httpd_register_handler ()
+/*
+pub fn httpd_register_handler<F> (route: String,
+                                  callback: F) where F: 'static + FnMut(i32)
+*/
+pub fn httpd_register_handler<CB: 'static + FnMut(i32)> (route: String,
+                                                         func: CB)
 {
-
+  /* 
+  let mut p = Handler { route: route, func: Some(Box::new(func)) };
+  let mut p = Handler { route: route, ..Default::default() };
+   */
+  let mut p = Handler::new();
+  p.set_route(route);
+  p.set_func(func);
+  p.do_func(1);
 }
 
 pub fn start(port: u32,
              www_root: String)
 {
-  println!("start ...");
+  println!("start ... port: {} www_root: {}", port, www_root);
 
   /*
     get - GET specific route
-    put - PUT specific route
     post - POST specific route
-    delete - DELETE specific route
+    put - PUT specific route
     head - HEAD specific route
+    delete - DELETE specific route
     options - OPTIONS specific route
     patch - PATCH specific route
   */
