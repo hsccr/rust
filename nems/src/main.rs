@@ -6,5 +6,7 @@
 mod httpd;
 
 fn main() {
-    httpd::start()
+    httpd::httpd_register_handler();
+    httpd::start(8000, "/".to_string());
+    httpd::stop();
 }

@@ -1,19 +1,21 @@
 use rocket::{get, put, post, delete, head, patch, options, routes};
+use rocket::State;
 use rocket::http::Status;
 use rocket::response::status::Custom;
-use serde::{Deserialize, Serialize};
 
-use std::collections::HashMap;
-
-use rocket::State;
 use rocket_contrib::json::Json;
 use rocket_contrib::uuid::Uuid;
 use rocket_contrib::uuid::uuid_crate as uuid;
 
-// A small people mapping in managed state for the sake of this example. In a
-// real application this would be a database. Notice that we use the uuid::Uuid
-// type here and not the rocket_contrib::uuid::Uuid type.
-struct People(HashMap<uuid::Uuid, &'static str>);
+use serde::{Deserialize, Serialize};
+
+use std::collections::HashMap;
+use std::sync::Mutex;
+
+struct ShareData
+{
+  mutex: Mutex<HashMap<uuid::Uuid, &'static str>>
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct PostData {
@@ -110,20 +112,27 @@ fn httpd_options() -> Json<&'static str> {
 }
 
 #[get("/people/<id>")]
-fn people(id: Uuid, people: State<People>) -> Result<String, String> {
+fn people(id: Uuid, state: State<ShareData>) -> Result<String, String> {
 
-  for (&contact, &number) in people.0.iter() {
+  let mut lock = state.mutex.lock().expect("lock shared data");
+  for (&contact, &number) in lock.iter() {
     println!("Calling {}: {}", contact, number);
   }
 
-    // Because Uuid implements the Deref trait, we use Deref coercion to convert
-    // rocket_contrib::uuid::Uuid to uuid::Uuid.
-    Ok(people.0.get(&id)
-        .map(|person| format!("We found: {}", person))
-        .ok_or_else(|| format!("Person not found for UUID: {}", id))?)
+  lock.insert("7f205202-7ba1-4c39-b2fc-3e630722b39f".parse().unwrap(), "ccr");
+
+  Ok(lock.get(&id)
+    .map(|person| format!("We found: {}", person))
+    .ok_or_else(|| format!("Person not found for UUID: {}", id))?)
 }
 
-pub fn start()
+pub fn httpd_register_handler ()
+{
+
+}
+
+pub fn start(port: u32,
+             www_root: String)
 {
   println!("start ...");
 
@@ -143,9 +152,9 @@ pub fn start()
   map.insert("ad962969-4e3d-4de7-ac4a-2d86d6d10839".parse().unwrap(), "George");
 
   rocket::ignite()
-        .manage(People(map))
+        .manage(ShareData{mutex: Mutex::new(map)})
         .mount(
-      "/",
+          &www_root.to_string(),
       routes![
           people,
           hello,
@@ -166,3 +175,7 @@ pub fn start()
   .launch();
 }
 
+pub fn stop()
+{
+
+}
